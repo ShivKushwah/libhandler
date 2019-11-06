@@ -385,7 +385,7 @@ void* lh_realloc(void* p, size_t size) {
   return (custom_realloc == NULL ? realloc(p, size) : custom_realloc(p, size));  
 }
 void lh_free(void* p) {
-  assert(p != NULL);
+  //assert(p != NULL);
   if (p == NULL) return;
   if (custom_free == NULL) free(p);
   else custom_free(p);
@@ -501,7 +501,7 @@ const char* lh_optag_name(lh_optag optag) {
 }
 
 static bool op_is_release(const lh_operation* op) {
-  assert(op!=NULL);
+  //assert(op!=NULL);
   return (op->opkind != LH_OP_NORESUMEX);
 }
 
@@ -607,14 +607,14 @@ void lh_check_memory(FILE* h) {
   Cstack
 -----------------------------------------------------------------*/
 static void cstack_init(ref cstack* cs) {
-  assert(cs != NULL);
+  //assert(cs != NULL);
   cs->base = NULL;
   cs->size = 0;
   cs->frames = NULL;
 }
 
 static void cstack_free(ref cstack* cs) {
-  assert(cs != NULL);
+  //assert(cs != NULL);
   if (cs->frames != NULL) {
     checked_free(cs->frames);
     cs->frames = NULL;
@@ -664,7 +664,7 @@ static __noinline void fragment_free_(fragment* f) {
 }
 
 static void _fragment_release(fragment* f) {
-  assert(f->refcount > 0);
+  //assert(f->refcount > 0);
   if (f->refcount > 1) {
     f->refcount--;
   }
@@ -687,9 +687,9 @@ static void fragment_release_at(fragment* volatile * pf) {
 
 // Copy a reference to a resume continuation, increasing its reference count.
 static fragment* fragment_acquire(fragment* f) {
-  assert(f != NULL);
+  //assert(f != NULL);
   if (f != NULL) {
-    assert(f->refcount > 0);
+    //assert(f->refcount > 0);
     if (f->refcount >= 0) f->refcount++;
   }
   return f;
@@ -704,7 +704,7 @@ static void hstack_free(ref hstack* hs, bool do_release);
 
 // release a resumptions; returns `true` if it was released
 static __noinline void _resume_free(resume* r) {
-  assert(r->refcount == -1);
+  //assert(r->refcount == -1);
   #ifdef _STATS
   stats.rcont_released++;
   stats.rcont_released_size += (long)r->cstack.size + (long)r->hstack.size;
@@ -715,8 +715,8 @@ static __noinline void _resume_free(resume* r) {
 }
 
 static void _resume_release(resume* r) {
-  assert(r->lhresume.rkind == GeneralResume || r->lhresume.rkind == ScopedResume);
-  assert(r->refcount > 0);
+  //assert(r->lhresume.rkind == GeneralResume || r->lhresume.rkind == ScopedResume);
+  //assert(r->refcount > 0);
   if (r->refcount > 1) {
     r->refcount--;
   }
@@ -739,10 +739,10 @@ static void resume_release_at(ref resume** pr) {
 
 // Acquire a resumption by increasing its reference count.
 static resume* resume_acquire(resume* r) {
-  assert(r!=NULL);
+  //assert(r!=NULL);
   if (r != NULL) {
-    assert(r->lhresume.rkind == GeneralResume || r->lhresume.rkind == ScopedResume);
-    assert(r->refcount > 0);
+    //assert(r->lhresume.rkind == GeneralResume || r->lhresume.rkind == ScopedResume);
+    //assert(r->refcount > 0);
     if (r->refcount >= 0) r->refcount++;
   }
   return r;
@@ -780,13 +780,13 @@ static count handler_size(const lh_effect effect) {
 
 // Return the handler below on the stack
 static handler* _handler_prev(const handler* h) {
-  assert(h->prev >= 0); // may be equal to zero, in which case the same handler is returned! (bottom frame)
+  //assert(h->prev >= 0); // may be equal to zero, in which case the same handler is returned! (bottom frame)
   return (handler*)((byte*)h - h->prev);
 }
 
 // Return a pointer to the last skipped handler 
 static handler* _handler_prev_skip(const skiphandler* sh) {
-  assert(sh->toskip > 0);
+  //assert(sh->toskip > 0);
   return (handler*)((byte*)sh - sh->toskip);
 }
 
@@ -801,7 +801,7 @@ static void handler_release(handler* h) {
     /* nothing */
   }
   else {
-    assert(is_effecthandler(h));
+    //assert(is_effecthandler(h));
     effecthandler* eh = (effecthandler*)h;
     lh_releasefun* f = eh->hdef->local_release;
     if (f != NULL) {
@@ -824,7 +824,7 @@ static handler* handler_acquire(handler* h) {
     /* nothing */
   }
   else {
-    assert(is_effecthandler(h));
+    //assert(is_effecthandler(h));
     effecthandler* eh = (effecthandler*)h;
     lh_acquirefun* f = eh->hdef->local_acquire;
     if (f != NULL) {
@@ -894,8 +894,8 @@ static bool valid_handler(const hstack* hs, const handler* h) {
 }
 
 static bool hstack_follows(const hstack* hs, const handler* h, const handler* g) {
-  assert(valid_handler(hs, h));
-  assert(valid_handler(hs, g));
+  //assert(valid_handler(hs, h));
+  //assert(valid_handler(hs, g));
   return (h != g && (byte*)h == (byte*)g - g->prev);
 }
 #endif
@@ -903,13 +903,13 @@ static bool hstack_follows(const hstack* hs, const handler* h, const handler* g)
 
 // Return the number of bytes between a handler and the end of the handler stack
 static count  hstack_indexof(const hstack* hs, const handler* h) {
-  assert((hs->count==0 && h==hs->top) || valid_handler(hs,h));
+  // assert((hs->count==0 && h==hs->top) || valid_handler(hs,h));
   return (hs->count - ptrdiff(h, hs->hframes));
 }
 
 // Return the handler that is `idx` bytes down the handler stack
 static handler* hstack_at(const hstack* hs, count  idx) {
-  assert(idx >= 0 && idx <= hs->count);
+  // assert(idx >= 0 && idx <= hs->count);
   return (handler*)(&hs->hframes[hs->count - idx]);
 }
 
@@ -932,23 +932,23 @@ static void hstack_realloc_(ref hstack* hs, count needed) {
 
 // Return the previous handler, or NULL if at the bottom frame
 static handler* hstack_prev(hstack* hs, handler* h) {
-  assert(valid_handler(hs, h));
+  // assert(valid_handler(hs, h));
   handler* prev = _handler_prev(h);
-  assert(prev==h || hstack_follows(hs,prev,h));
+  // assert(prev==h || hstack_follows(hs,prev,h));
   return (prev==h ? NULL : prev);
 }
 
 // Return the bottomost skipped handler
 static handler* hstack_prev_skip(hstack* hs, skiphandler* h) {
-  assert(valid_handler(hs, to_handler(h)));
+  //assert(valid_handler(hs, to_handler(h)));
   handler* prev = _handler_prev_skip(h);  
-  assert(valid_handler(hs, prev));
+  // assert(valid_handler(hs, prev));
   return prev;
 }
 
 // Release the handler frames of an `hstack`
 static void hstack_free(ref hstack* hs, bool do_release) {
-  assert(hs != NULL);
+  // assert(hs != NULL);
   if (hs->hframes != NULL) {
     if (do_release && !hstack_empty(hs)) {
       handler* h = hstack_top(hs);
@@ -972,7 +972,7 @@ static void hstack_free(ref hstack* hs, bool do_release) {
 
 // Pop a handler frame, decreasing its reference counts.
 static void hstack_pop(ref hstack* hs, bool do_release) {
-  assert(!hstack_empty(hs));
+  // assert(!hstack_empty(hs));
   if (do_release) { handler_release(hstack_top(hs)); }
   hs->count = ptrdiff(hs->top, hs->hframes);
   hs->top = _handler_prev(hs->top);
@@ -1004,11 +1004,11 @@ static handler* hstack_ensure_space(ref hstack* hs, count extracount) {
 
 // Push a new uninitialized handler frame and return a reference to it.
 static handler* _hstack_push(ref hstack* hs, lh_effect effect, count size) {
-  assert(size == handler_size(effect));
+  // assert(size == handler_size(effect));
   handler* h = hstack_ensure_space(hs, size);
   h->effect = effect;
   h->prev = ptrdiff(h, hs->top);
-  assert((hs->count > 0 && h->prev > 0) || (hs->count == 0 && h->prev == 0));
+  // assert((hs->count > 0 && h->prev > 0) || (hs->count == 0 && h->prev == 0));
   hs->top = h;
   hs->count += size;
   return h;
@@ -1055,7 +1055,7 @@ static scopedhandler* hstack_push_scoped(ref hstack* hs, resume* resume) {
 // Move handlers from one stack to another keeping reference counts as is.
 // Include `from` in the moved handlers. Returns a pointer to the new `from` in `hs`.
 static handler* hstack_append_movefrom(ref hstack* hs, ref hstack* topush, const handler* from) {
-  assert(hstack_contains(topush, from));
+  // assert(hstack_contains(topush, from));
   count  needed = hstack_indexof(topush, from);
   handler* bot = hstack_ensure_space(hs, needed);
   memcpy(bot, from, needed);
@@ -1069,14 +1069,14 @@ static handler* hstack_append_movefrom(ref hstack* hs, ref hstack* topush, const
 // Include `from` in the copied handlers but will not acquire it!!
 // Returns a pointer to the new `from` in `hs`.
 static handler* hstack_append_copyfrom(ref hstack* hs, ref hstack* tocopy, handler* from ) {
-  assert(hstack_contains(tocopy,from));
+  // assert(hstack_contains(tocopy,from));
   handler* bot = hstack_append_movefrom(hs, tocopy, from);
   handler* h = hstack_top(hs);
   while(h > bot) {
     handler_acquire(h);    
     h = hstack_prev(hs,h);
   } 
-  assert(h==bot);
+  // assert(h==bot);
   return bot;
 }
 
@@ -1085,15 +1085,15 @@ static effecthandler* hstack_find(ref hstack* hs, lh_optag optag, out const lh_o
   if (!hstack_empty(hs)) {
     handler* h = hstack_top(hs);
     do {
-      assert(valid_handler(hs, h));
+      // assert(valid_handler(hs, h));
       if (h->effect == optag->effect) {
         effecthandler* eh = (effecthandler*)h;
-        assert(eh->hdef != NULL);
+        // assert(eh->hdef != NULL);
         const lh_operation* oper = &eh->hdef->operations[optag->opidx];
-        assert(oper->optag == optag); // can fail if operations are defined in a different order than declared
-        assert(oper->opfun != NULL || oper->opkind == LH_OP_FORWARD);
+        // assert(oper->optag == optag); // can fail if operations are defined in a different order than declared
+        // assert(oper->opfun != NULL || oper->opkind == LH_OP_FORWARD);
         if (oper->opfun != NULL) {    // NULL functions are assume tail-resumptive identity functions, skip it
-          *skipped = hstack_indexof(hs, h); assert(*skipped > 0);
+          *skipped = hstack_indexof(hs, h); // assert(*skipped > 0);
           *op = oper;
           return eh;
         }
@@ -1168,8 +1168,8 @@ static void cstack_extendfrom(ref cstack* cs, ref cstack* ds, bool will_free_ds)
         memcpy(newframes, newbase, newsize);
       }
       // next copy the cs->frames into the new frames
-      assert(csb >= newbase);
-      assert(csb + cs->size <= newbase + newsize);
+      // assert(csb >= newbase);
+      // assert(csb + cs->size <= newbase + newsize);
       memcpy(newframes + (csb - newbase), cs->frames, cs->size);
       // and update cs
       checked_free(cs->frames);
@@ -1178,10 +1178,10 @@ static void cstack_extendfrom(ref cstack* cs, ref cstack* ds, bool will_free_ds)
       cs->base = newbase;
     }
     // and finally copy the new `ds->frames` into `cs` (which is now large enought to contain `ds`)
-    assert(cs->base == newbase);
-    assert(cs->size == newsize);
-    assert(dsb >= newbase);
-    assert(dsb + ds->size <= newbase + newsize);
+    // assert(cs->base == newbase);
+    // assert(cs->size == newsize);
+    // assert(dsb >= newbase);
+    // assert(dsb + ds->size <= newbase + newsize);
     memcpy(cs->frames + (dsb - newbase), ds->frames, ds->size);    
   }
 }
@@ -1192,7 +1192,7 @@ static void cstack_extendfrom(ref cstack* cs, ref cstack* ds, bool will_free_ds)
 static void hstack_pop_upto(ref hstack* hs, ref handler* h, bool do_release, out cstack* cs) 
 {
   if (cs != NULL) cstack_init(cs);
-  assert(!hstack_empty(hs));
+  // assert(!hstack_empty(hs));
   handler* cur = hstack_top(hs);
 //  handler* skip_upto = NULL;
   while( cur > h ) {
@@ -1221,8 +1221,8 @@ static void hstack_pop_upto(ref hstack* hs, ref handler* h, bool do_release, out
     hstack_pop(hs, do_release);
     cur = hstack_top(hs);
   }
-  assert(cur == h);
-  assert(hstack_top(hs) == h);
+  // assert(cur == h);
+  // assert(hstack_top(hs) == h);
 }
 
 
@@ -1246,7 +1246,7 @@ static __noinline bool _lh_init(hstack* hs) {
     }
   }
   stackbottom = get_stack_top(); // in debug mode we use this to check if operation arguments are not passed on the stack
-  assert(__hstack.size==0 && hs == &__hstack);
+  // assert(__hstack.size==0 && hs == &__hstack);
   hstack_init(hs);
   return true;
 }
@@ -1257,7 +1257,7 @@ static bool lh_init(hstack* hs) {
 }
 
 static __noinline void lh_done(hstack* hs) {
-  assert(hs == &__hstack && hs->size>0 && hs->count==0 && (byte*)hs->top==&hs->hframes[0]);
+  // assert(hs == &__hstack && hs->size>0 && hs->count==0 && (byte*)hs->top==&hs->hframes[0]);
   hstack_free(hs,true);
 }
 
@@ -1308,7 +1308,7 @@ static __noinline __noreturn void _jumpto_stack(
   // and jump 
   // _lh_longjmp_chain(*entry, cstack_bottom(&cs), exnframe);
   if (exnframe != NULL) {
-    assert(stack_isbelow(exn_bottom, exnframe));
+    // assert(stack_isbelow(exn_bottom, exnframe));
     exnframe->previous = exn_bottom;
   }
   _lh_longjmp(*entry, 1);
@@ -1323,7 +1323,7 @@ static __noinline __noreturn void jumpto(
   if (cs->frames == NULL) {
     // if no stack, just jump back down the stack; 
     // sanity: check if the entry is really below us!
-    assert(exnframe==NULL);
+    // assert(exnframe==NULL);
     void* top = get_stack_top();
     if (cs->base != NULL && stack_isbelow(top,cstack_top(cs))) {
       fatal(EFAULT,"Trying to jump up the stack to a scope that was already exited!");
@@ -1354,7 +1354,7 @@ static __noinline __noreturn void jumpto(
 // jump to a fragment
 static __noinline __noreturn void jumpto_fragment(fragment* f, lh_value res) 
 {
-  assert(f->refcount >= 1);
+  // assert(f->refcount >= 1);
   f->res = res; // set the argument in the cont slot  
   jumpto(&f->cstack, &f->entry, false, NULL);
 }
@@ -1365,7 +1365,7 @@ static __noinline __noreturn void jumpto_resume( resume* r, lh_value local, lh_v
 {
   // first restore the hstack and set the new local
   handler* h = hstack_bottom(&r->hstack);
-  assert(is_effecthandler(h));
+  // assert(is_effecthandler(h));
   if (r->refcount == 1) {
     h = hstack_append_movefrom(&__hstack, &r->hstack, hstack_bottom(&r->hstack));
     hstack_free(&r->hstack, false /* no release */); // zero out the hstack in the resume since we moved it
@@ -1373,7 +1373,7 @@ static __noinline __noreturn void jumpto_resume( resume* r, lh_value local, lh_v
   else {
     h = hstack_append_copyfrom(&__hstack, &r->hstack, hstack_bottom(&r->hstack)); // does not acquire h
   }
-  assert(is_effecthandler(h));
+  // assert(is_effecthandler(h));
   ((effecthandler*)h)->local = local; // write new local directly into the hstack
   if (r->refcount==1) {
     handler_acquire(h); // acquire now that the new local is in there (as it may alias the original)
@@ -1534,7 +1534,7 @@ static __noinline lh_value capture_resume_yield(hstack* hs, effecthandler* h, co
   // and set our jump point
   if (_lh_setjmp(r->entry) != 0) {
     // longjmp back here when the resumption is called
-    assert(hs == &__hstack);
+    // assert(hs == &__hstack);
     lh_value res = r->arg;
     #ifdef _STATS
     stats.rcont_resumed_resume++;
@@ -1559,7 +1559,7 @@ static __noinline lh_value capture_resume_yield(hstack* hs, effecthandler* h, co
     if (r->cstack.frames == NULL) stats.rcont_captured_empty++;
     stats.rcont_captured_size += (long)r->cstack.size + (long)r->hstack.size;
     #endif
-    assert(h->hdef == ((effecthandler*)(r->hstack.hframes))->hdef); // same handler?
+    // assert(h->hdef == ((effecthandler*)(r->hstack.hframes))->hdef); // same handler?
     // and yield to the handler
     yield_to_handler(hs, h, r, op, oparg, false /* we moved the frames to the resumption */ );
   }
@@ -1584,11 +1584,11 @@ public:
     this->effect = effect;
   }
   ~raii_hstack_pop() {
-    assert(!hstack_empty(hs));
+    // assert(!hstack_empty(hs));
     //#ifndef NDEBUG
     //fprintf(stderr, "hstack_top effect: %s, vs. pop effect: %s\n", lh_effect_name(hstack_top(hs)->effect), lh_effect_name(effect));
     //#endif
-    assert(hstack_top(hs)->effect == effect);
+    // assert(hstack_top(hs)->effect == effect);
     hstack_pop(hs, do_release);
   }
 };
@@ -1615,17 +1615,17 @@ static __noinline lh_value handle_with(
     // ie. we need to load from the top of the current handler stack instead.
     // This is also necessary if the handler stack was reallocated to grow.
     h = (effecthandler*)(hstack_top(hs));  // re-load our handler
-    assert(is_effecthandler(to_handler(h)));
+    // assert(is_effecthandler(to_handler(h)));
     #ifndef NDEBUG
-    assert(id == h->id);
-    assert(hdef == h->hdef);
-    assert(base == h->stackbase);
+    // assert(id == h->id);
+    // assert(hdef == h->hdef);
+    // assert(base == h->stackbase);
     #endif
     lh_value  res    = h->arg;
     lh_value  local  = h->local;
     resume*   resume = h->arg_resume;
     const lh_operation* op = h->arg_op;
-    assert(op == NULL || op->optag->effect == h->handler.effect);
+    // assert(op == NULL || op->optag->effect == h->handler.effect);
     hstack_pop(hs, (op==NULL) /*|| !op_is_release(op)*/ ); // no release if moved into resumption
     if (op != NULL && op->opfun != NULL) {
       // push a scoped frame if necessary
@@ -1634,9 +1634,9 @@ static __noinline lh_value handle_with(
         #ifdef __cplusplus
         raii_hstack_pop do_pop(hs, true, LH_EFFECT(__scoped));
         #endif
-        assert((void*)&resume->lhresume == (void*)resume);
+        // assert((void*)&resume->lhresume == (void*)resume);
         res = op->opfun(&resume->lhresume, local, res);
-        assert(hs==&__hstack);
+        // assert(hs==&__hstack);
         #ifdef __cplusplus
         // set now only now to not release; in case of an exception we always need to release (?)
         if (op->opkind > LH_OP_SCOPED) do_pop.do_release = false;
@@ -1662,12 +1662,12 @@ static __noinline lh_value handle_with(
       try {
         #endif
         res = action(arg);
-        assert(hs == &__hstack);
+        // assert(hs == &__hstack);
         h = (effecthandler*)hstack_top(hs);  // re-load our handler since the handler stack could have been reallocated
         #ifndef NDEBUG
-        assert(id == h->id);
-        assert(hdef == h->hdef);
-        assert(base == h->stackbase);
+        // assert(id == h->id);
+        // assert(hdef == h->hdef);
+        // assert(base == h->stackbase);
         #endif
         // pop our handler
         resfun = h->hdef->resultfun;
@@ -1703,7 +1703,7 @@ static __noinline lh_value handle_upto(hstack* hs, void* base, const lh_handlerd
   #ifdef __cplusplus
   try {
     h->exn_frame = _lh_get_exn_top();
-    assert(h->exn_frame == NULL || stack_isbelow(base, h->exn_frame));
+    // assert(h->exn_frame == NULL || stack_isbelow(base, h->exn_frame));
   #endif
     res = handle_with(hs, h, action, arg);
     fragment = hstack_pop_fragment(hs);
@@ -1758,8 +1758,8 @@ lh_raii_linear_handler::~lh_raii_linear_handler() {
   hstack* hs = (hstack*)this->hs;
 #ifndef NDEBUG
   const handler* top = hstack_top(hs);
-  assert(is_effecthandler(top));
-  assert(((effecthandler*)top)->id == this->id);
+  // assert(is_effecthandler(top));
+  // assert(((effecthandler*)top)->id == this->id);
 #endif
   hstack_pop(hs, do_release); 
   if (this->init) lh_done(hs);
@@ -1777,8 +1777,8 @@ void _lh_linear_handler_done(ptrdiff_t id, bool init, bool do_release) {
   hstack* hs = &__hstack;
 #ifndef NDEBUG
   handler* top = hstack_top(hs);
-  assert(is_effecthandler(top));
-  assert(((effecthandler*)top)->id==id);
+  // assert(is_effecthandler(top));
+  // assert(((effecthandler*)top)->id==id);
 #endif
   hstack_pop(hs, do_release); 
   if (init) lh_done(hs);
@@ -1825,7 +1825,7 @@ static lh_value yieldop(lh_optag optag, lh_value arg)
     r.lhresume.rkind = TailResume;
     r.local = h->local;
     r.resumed = false;
-    assert((void*)(&r.lhresume) == (void*)&r);
+    // assert((void*)(&r.lhresume) == (void*)&r);
     lh_value res;
     if (op->opkind != LH_OP_TAIL_NOOP) {
       // push a skip frame
@@ -1837,10 +1837,10 @@ static lh_value yieldop(lh_optag optag, lh_value arg)
       // call the operation handler directly for a tail resumption
       res = op->opfun(&r.lhresume, h->local, arg);
       h = (effecthandler*)hstack_at(hs, hidx);
-      assert(is_effecthandler(to_handler(h)));
+      // assert(is_effecthandler(to_handler(h)));
       #ifndef __cplusplus
-      assert(!hstack_empty(hs));
-      assert(is_skiphandler(hstack_top(hs)));
+      // assert(!hstack_empty(hs));
+      // assert(is_skiphandler(hstack_top(hs)));
       hstack_pop(hs,false); // skip frames need no release
       #endif
     }
@@ -1870,7 +1870,7 @@ static lh_value yieldop(lh_optag optag, lh_value arg)
     return capture_resume_yield(hs, h, op, arg);
   }
 
-  assert(false);
+  // assert(false);
   return lh_value_null;
 }
 
@@ -1911,11 +1911,11 @@ lh_value lh_yield_local(lh_optag optag)
 // Get a pointer to values passed by stack reference in an operation handler
 void* lh_cstack_ptr(lh_resume r, void* p) {
   if (r->rkind == TailResume) return p;
-  assert(r->rkind == GeneralResume || r->rkind == ScopedResume);
+  // assert(r->rkind == GeneralResume || r->rkind == ScopedResume);
   cstack* cs = &((resume*)r)->cstack;
   ptrdiff_t delta = ptrdiff(cs->frames, cs->base);
   byte* q = (byte*)p + delta;
-  assert(q >= cs->frames && q < cs->frames + cs->size);
+  // assert(q >= cs->frames && q < cs->frames + cs->size);
   // paranoia: check that the new pointer is indeed in the captured stack
   if (q >= cs->frames && q < cs->frames + cs->size) {
     return q;
@@ -1927,7 +1927,7 @@ void* lh_cstack_ptr(lh_resume r, void* p) {
 
 // Yield N arguments to an operation
 lh_value lh_yieldN(lh_optag optag, int argcount, ...) {
-  assert(argcount >= 0);
+  // assert(argcount >= 0);
   va_list ap;
   va_start(ap, argcount);
   // note: allocated on the stack; use `lh_cstack_ptr` to retrieve in the operation handler.
@@ -1938,7 +1938,7 @@ lh_value lh_yieldN(lh_optag optag, int argcount, ...) {
     yargs->args[i] = va_arg(ap, lh_value);
     i++;
   }
-  assert(i == argcount);
+  // assert(i == argcount);
   yargs->args[i] = lh_value_null; // sentinel value
   va_end(ap);
   return lh_yield(optag, lh_value_yieldargs(yargs));
@@ -2003,12 +2003,12 @@ static void _lh_release(resume* r) {
     r->resumptions = -1; // so capture_resume_call will raise an exception
     try {
       lh_release_resume_(r, lh_value_null, lh_value_null);
-      assert(false); // we should never get here
+      // assert(false); // we should never get here
     }
     catch (const lh_resume_unwind_exception& exn) {
       if (exn.r != r) throw;
       // done, we unwound the resumption
-      assert(r->refcount == 1 && r->resumptions == 0);
+      // assert(r->refcount == 1 && r->resumptions == 0);
     }
   }
   #endif
