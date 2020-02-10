@@ -482,7 +482,7 @@ static bool in_cstack(const void* p) {
 
 // In debug mode, check we don't pass pointers to the C stack in `lh_value`s.
 lh_value lh_check_value_ptr(const void* p) {
-  if (in_cstack(p)) fatal(EINVAL,"Cannot pass pointers to the c-stack in a lh_value");
+  // if (in_cstack(p)) fatal(EINVAL,"Cannot pass pointers to the c-stack in a lh_value");
   return ((lh_value)((intptr_t)p));
 }
 
